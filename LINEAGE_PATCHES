@@ -1,0 +1,10 @@
+# LineageOS 22.1 patches for SM-E146B (m14x)
+#
+# Applied on top of Samsung kernel source for Exynos 1330 (s5e8535).
+# Target: LineageOS 22.1 (Android 15), GKI 2.0, boot header v4.
+#
+# Patches:
+#   - GKI 2.0 / vendor_boot / init_boot compatibility
+#   - s5e8535-m14xnsxx_defconfig: enable LineageOS required configs
+#   - Suppress CONFIG_LOCALVERSION_AUTO for reproducible builds
+#   - Add vendor module signing setup for GKI compliance
