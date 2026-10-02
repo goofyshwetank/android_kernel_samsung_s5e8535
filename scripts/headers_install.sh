@@ -41,6 +41,23 @@ sed -E -e '
 scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ $TMPFILE > $OUTFILE
 [ $? -gt 1 ] && exit 1
 
+# Android also builds 32-bit arm userspace against the arm64 headers. Let its
+# own uapi copy win there (arm64's asm/ is wrong for it, and mixing the two
+# sets breaks), so ours only fill in headers the toolchain lacks. bionic's
+# header tooling can't parse __has_include_next, and bionic always has its own
+# asm/ and asm-generic/, so those defer unconditionally.
+h=${OUTFILE#*usr/include/}
+if [ "$SRCARCH" = arm64 ] && [ "$h" != "$OUTFILE" ]; then
+	case $h in
+	asm/*|asm-generic/*) cond='defined(__arm__)' ;;
+	*) cond="defined(__arm__) && __has_include_next(<$h>)" ;;
+	esac
+	{ printf '#if %s\n#include_next <%s>\n#else\n' "$cond" "$h"
+	  cat $OUTFILE
+	  printf '#endif\n'; } > $TMPFILE
+	mv $TMPFILE $OUTFILE
+fi
+
 # Remove /* ... */ style comments, and find CONFIG_ references in code
 configs=$(sed -e '
 :comment
