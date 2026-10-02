@@ -58,7 +58,7 @@ obj-$(CONFIG_PROCA_CERTIFICATES_XATTR) += s_os/proca_storage_xattr.o
 
 obj-$(CONFIG_PROCA) += s_os/proca_lsm.o
 
-ccflags-y += -Isecurity/samsung/proca/s_os
+ccflags-y += -I$(srctree)/security/samsung/proca/s_os
 else
 obj-$(CONFIG_PROCA) += proca_lsm.o
 endif # CONFIG_PROCA_S_OS

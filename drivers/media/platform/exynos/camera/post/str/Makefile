@@ -13,6 +13,6 @@ str-objs += pablo-str-cal.o
 obj-$(CONFIG_VIDEO_EXYNOS_CAMERA_POSTPROCESS_STR)	+= str.o
 obj-y							+= sfr/
 
-ccflags-y += -Idrivers/media/platform/exynos/camera/post/str
-ccflags-y += -Idrivers/media/platform/exynos/camera/post/str/sfr
-ccflags-y += -Idrivers/media/platform/exynos/camera/post/str/param
+ccflags-y += -I$(srctree)/drivers/media/platform/exynos/camera/post/str
+ccflags-y += -I$(srctree)/drivers/media/platform/exynos/camera/post/str/sfr
+ccflags-y += -I$(srctree)/drivers/media/platform/exynos/camera/post/str/param
