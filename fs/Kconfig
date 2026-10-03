@@ -389,3 +389,10 @@ config IO_WQ
 	bool
 
 endmenu
+
+config DYNAMIC_FSYNC
+	bool "Dynamic Fsync Support"
+	default y
+	help
+	  Allows toggling synchronous file writes via sysfs to improve interactive
+	  responsiveness during heavy disk writes.

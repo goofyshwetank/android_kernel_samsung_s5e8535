@@ -331,3 +331,9 @@ config ENERGY_MODEL
 	  The exact usage of the energy model is subsystem-dependent.
 
 	  If in doubt, say N.
+
+config WAKELOCK_BLOCKER
+	bool "Generic sysfs Wakelock Blocker"
+	default y
+	help
+	  Allows blocking specific problematic wakelocks via /sys/module/wakeup/parameters/blocked_wakelocks.
