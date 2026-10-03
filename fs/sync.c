@@ -1,3 +1,10 @@
+
+#ifdef CONFIG_DYNAMIC_FSYNC
+#include <linux/moduleparam.h>
+bool dynamic_fsync_enabled = true;
+module_param_named(fsync_enabled, dynamic_fsync_enabled, bool, 0644);
+MODULE_PARM_DESC(fsync_enabled, "Enable or disable fsync (Dynamic Fsync)");
+#endif
 // SPDX-License-Identifier: GPL-2.0
 /*
  * High-level sync()-related operations
@@ -218,11 +225,19 @@ static int do_fsync(unsigned int fd, int datasync)
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!dynamic_fsync_enabled)
+		return 0;
+#endif
 	return do_fsync(fd, 0);
 }
 
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
 {
+#ifdef CONFIG_DYNAMIC_FSYNC
+	if (!dynamic_fsync_enabled)
+		return 0;
+#endif
 	return do_fsync(fd, 1);
 }
 

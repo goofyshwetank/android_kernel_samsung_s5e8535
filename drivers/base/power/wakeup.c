@@ -616,8 +616,38 @@ static void wakeup_source_activate(struct wakeup_source *ws)
  * @ws: Wakeup source to report the event for.
  * @hard: If set, abort suspends in progress and wake up from suspend-to-idle.
  */
+
+#ifdef CONFIG_WAKELOCK_BLOCKER
+#include <linux/string.h>
+#include <linux/moduleparam.h>
+static char blocked_wakelocks[1024] = {0};
+module_param_string(blocked_wakelocks, blocked_wakelocks, sizeof(blocked_wakelocks), 0644);
+MODULE_PARM_DESC(blocked_wakelocks, "Semicolon or comma-separated list of blocked wakelocks");
+
+static bool is_wakelock_blocked(const char *name)
+{
+	char *cursor, *token;
+	char buf[1024];
+
+	if (!name || !blocked_wakelocks[0])
+		return false;
+
+	strlcpy(buf, blocked_wakelocks, sizeof(buf));
+	cursor = buf;
+	while ((token = strsep(&cursor, ";, ")) != NULL) {
+		if (*token && strcmp(name, token) == 0)
+			return true;
+	}
+	return false;
+}
+#endif
+
 static void wakeup_source_report_event(struct wakeup_source *ws, bool hard)
 {
+#ifdef CONFIG_WAKELOCK_BLOCKER
+	if (ws && ws->name && is_wakelock_blocked(ws->name))
+		return;
+#endif
 	ws->event_count++;
 	/* This is racy, but the counter is approximate anyway. */
 	if (events_check_enabled)
