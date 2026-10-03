@@ -1,9 +1,13 @@
 
 #ifdef CONFIG_DYNAMIC_FSYNC
 #include <linux/moduleparam.h>
+#include <linux/suspend.h>
 bool dynamic_fsync_enabled = true;
+bool auto_dynamic_fsync = true;
 module_param_named(fsync_enabled, dynamic_fsync_enabled, bool, 0644);
 MODULE_PARM_DESC(fsync_enabled, "Enable or disable fsync (Dynamic Fsync)");
+module_param_named(auto_fsync, auto_dynamic_fsync, bool, 0644);
+MODULE_PARM_DESC(auto_fsync, "Automatically enable fsync when screen sleeps and disable when awake");
 #endif
 // SPDX-License-Identifier: GPL-2.0
 /*
@@ -120,6 +124,40 @@ SYSCALL_DEFINE0(sync)
 	ksys_sync();
 	return 0;
 }
+
+#ifdef CONFIG_DYNAMIC_FSYNC
+static int dynamic_fsync_pm_notifier(struct notifier_block *nb, unsigned long action, void *ptr)
+{
+	switch (action) {
+	case PM_SUSPEND_PREPARE:
+		if (auto_dynamic_fsync) {
+			dynamic_fsync_enabled = true;
+			ksys_sync();
+		}
+		break;
+	case PM_POST_SUSPEND:
+		if (auto_dynamic_fsync) {
+			dynamic_fsync_enabled = false;
+		}
+		break;
+	default:
+		break;
+	}
+	return NOTIFY_OK;
+}
+
+static struct notifier_block dynamic_fsync_pm_nb = {
+	.notifier_call = dynamic_fsync_pm_notifier,
+	.priority = 0,
+};
+
+static int __init dynamic_fsync_init(void)
+{
+	register_pm_notifier(&dynamic_fsync_pm_nb);
+	return 0;
+}
+late_initcall(dynamic_fsync_init);
+#endif
 
 static void do_sync_work(struct work_struct *work)
 {
