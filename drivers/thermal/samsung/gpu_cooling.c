@@ -518,9 +518,16 @@ static u32 get_dynamic_power(struct gpufreq_cooling_device *gpufreq_cdev,
  * Return: 0 on success, an error code otherwise (-EINVAL in case wrong
  * cooling state).
  */
+bool exynos_thermal_game_mode = false;
+EXPORT_SYMBOL(exynos_thermal_game_mode);
+module_param_named(game_mode, exynos_thermal_game_mode, bool, 0644);
+MODULE_PARM_DESC(game_mode, "Thermal Game Mode: relax thermal throttling for gaming");
+
 static int gpufreq_apply_cooling(struct gpufreq_cooling_device *gpufreq_cdev,
 				 unsigned long cooling_state)
 {
+	if (exynos_thermal_game_mode && cooling_state > 1)
+		cooling_state = 1;
 	unsigned int gpu_cooling_freq = 0;
 
 	/* Check if the old cooling action is same as new cooling action */
