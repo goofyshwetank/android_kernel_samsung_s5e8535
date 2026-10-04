@@ -2959,26 +2959,6 @@ Description:
 return:
 	Executive outcomes. 0---succeed. negative---failed
 *******************************************************/
-bool novatek_dt2w = true;
-module_param_named(dt2w, novatek_dt2w, bool, 0644);
-MODULE_PARM_DESC(dt2w, "Enable or disable Double Tap To Wake (DT2W)");
-
-static ssize_t dt2w_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", novatek_dt2w ? 1 : 0);
-}
-
-static ssize_t dt2w_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int val;
-	if (kstrtoint(buf, 10, &val))
-		return -EINVAL;
-	novatek_dt2w = (val > 0);
-	return count;
-}
-
-static struct kobj_attribute dt2w_attr = __ATTR(doubletap2wake, 0664, dt2w_show, dt2w_store);
-
 static int32_t nvt_ts_probe(struct spi_device *client)
 {
 	int32_t ret = 0;
@@ -3256,14 +3236,6 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 	}
 
 	device_init_wakeup(&client->dev, true);
-	{
-		struct kobject *android_touch_kobj = kobject_create_and_add("android_touch", NULL);
-		if (android_touch_kobj) {
-			int err = sysfs_create_file(android_touch_kobj, &dt2w_attr.attr);
-			if (err)
-				kobject_put(android_touch_kobj);
-		}
-	}
 
 	init_completion(&ts->resume_done);
 	complete_all(&ts->resume_done);
@@ -3747,12 +3719,6 @@ int32_t nvt_ts_suspend(struct device *dev)
 	cancel_delayed_work_sync(&nvt_esd_check_work);
 	nvt_esd_check_enable(false);
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
-
-	if (novatek_dt2w && !ts->shutdown_called) {
-		ts->sec_function |= DOUBLE_CLICK_MASK;
-		ts->lowpower_mode |= LP_AOT;
-		nvt_ts_mode_switch(ts, DOUBLE_CLICK_ENTER, true);
-	}
 
 	input_info(true, &ts->client->dev, "%s : ed:%d, lp:%d, prox:%ld, test:%d, prox_in_aot:%d\n",
 				__func__, ts->ear_detect_mode, ts->lowpower_mode, ts->prox_power_off,
