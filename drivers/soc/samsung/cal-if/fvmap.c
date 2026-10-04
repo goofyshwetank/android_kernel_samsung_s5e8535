@@ -25,8 +25,8 @@ static int percent_margin_table[MAX_MARGIN_ID];
 
 static int margin_mif;
 static int margin_int;
-static int margin_cpucl0;
-static int margin_cpucl1;
+static int margin_cpucl0 = -2;
+static int margin_cpucl1 = -2;
 static int margin_cpucl2;
 static int margin_npu;
 static int margin_npu0;
@@ -38,7 +38,7 @@ static int margin_cp_cpu;
 static int margin_cp;
 static int margin_cp_em;
 static int margin_cp_mcw;
-static int margin_g3d;
+static int margin_g3d = -2;
 static int margin_intcam;
 static int margin_cam;
 static int margin_csis;
@@ -517,6 +517,24 @@ int fvmap_init(void __iomem *sram_base)
 
 	if (sysfs_create_group(kobj, &asv_g_spec_grp))
 		pr_err("Fail to create asv_g_spec group\n");
+
+	/* NightKernel: Safe -2% default undervolt for Exynos 1330 silicon (A78, A55, Mali-G68) */
+	{
+		int vid;
+		percent_margin_table[MARGIN_CPUCL1] = -2;
+		percent_margin_table[MARGIN_CPUCL0] = -2;
+		percent_margin_table[MARGIN_G3D] = -2;
+		vid = get_vclk_id_from_margin_id(MARGIN_CPUCL1);
+		if (vid >= 0)
+			cal_dfs_set_volt_margin(vid | ACPM_VCLK_TYPE, -2);
+		vid = get_vclk_id_from_margin_id(MARGIN_CPUCL0);
+		if (vid >= 0)
+			cal_dfs_set_volt_margin(vid | ACPM_VCLK_TYPE, -2);
+		vid = get_vclk_id_from_margin_id(MARGIN_G3D);
+		if (vid >= 0)
+			cal_dfs_set_volt_margin(vid | ACPM_VCLK_TYPE, -2);
+		pr_info("NightKernel: Safe -2%% undervolt applied (-2%% on CPU Big/Little & GPU)\n");
+	}
 
 	return 0;
 }
