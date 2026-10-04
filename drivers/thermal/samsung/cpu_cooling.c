@@ -466,15 +466,16 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
  *
  * Return: 0 on success, an error code otherwise.
  */
-extern bool exynos_thermal_game_mode;
+bool exynos_thermal_game_mode;
+EXPORT_SYMBOL(exynos_thermal_game_mode);
 
 static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
 				 unsigned long state)
 {
-	if (exynos_thermal_game_mode && state > 1)
-		state = 1;
 	struct exynos_cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
 	int ret = 0;
+	if (exynos_thermal_game_mode && state > 1)
+		state = 1;
 
 	/* Request state should be less than max_level */
 	if (state > cpufreq_cdev->max_level)
