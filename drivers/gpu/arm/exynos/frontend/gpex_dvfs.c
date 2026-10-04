@@ -59,10 +59,9 @@ static void gpex_dvfs_context_init(struct device **dev)
 
 	if (!strncmp("interactive", of_string, strlen("interactive"))) {
 		dvfs.governor_type = G3D_DVFS_GOVERNOR_INTERACTIVE;
-		dvfs.interactive.highspeed_clock =
-			gpexbe_devicetree_get_int(interactive_info.highspeed_clock);
-		dvfs.interactive.highspeed_load =
-			gpexbe_devicetree_get_int(interactive_info.highspeed_load);
+		/* NightKernel: Mali-G68 845MHz burst clock and 70% threshold */
+		dvfs.interactive.highspeed_clock = 845000;
+		dvfs.interactive.highspeed_load = 70;
 		dvfs.interactive.highspeed_delay =
 			gpexbe_devicetree_get_int(interactive_info.highspeed_delay);
 	} else if (!strncmp("joint", of_string, strlen("joint"))) {
